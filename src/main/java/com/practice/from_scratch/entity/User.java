@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import javax.validation.constraints.Email;
+import java.util.HashSet;
 
 @Entity
 @Data
@@ -31,4 +32,11 @@ public class User {
     private String address;
 
     private boolean enabled;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "userId"),
+            inverseJoinColumns = @JoinColumn(name = "roleId")
+    )
+    private HashSet<Role> roles;
 }
