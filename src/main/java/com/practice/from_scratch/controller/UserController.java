@@ -7,6 +7,7 @@ import com.practice.from_scratch.dto.response.ResponseLoginDto;
 import com.practice.from_scratch.entity.User;
 import com.practice.from_scratch.entity.UserDetailsImpl;
 import com.practice.from_scratch.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -59,8 +60,18 @@ public class UserController {
                 .body(responseLoginDto);
     }
 
+    @PostMapping("/api/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String jwt = jwtUtils.getJwtToken(request);
+
+        boolean isLogout = userService.logout(jwt);
+
+        return ResponseEntity.ok()
+                .body("User logout? " + isLogout);
+    }
+
     @GetMapping("/api/users")
-    public List<User> getUsers(){
+    public List<User> getUsers() {
         return userService.findAll();
     }
 }

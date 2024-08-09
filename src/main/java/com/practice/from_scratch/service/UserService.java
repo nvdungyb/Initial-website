@@ -1,27 +1,34 @@
 package com.practice.from_scratch.service;
 
+import com.practice.from_scratch.config.JWTUtils;
 import com.practice.from_scratch.dto.request.RequestSignUpDto;
 import com.practice.from_scratch.entity.Role;
 import com.practice.from_scratch.entity.User;
 import com.practice.from_scratch.extension.RoleFactory;
 import com.practice.from_scratch.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.Duration;
+import java.util.*;
 
 @Service
 public class UserService {
+    @Value("${logoutKeySet}")
+    private String keySet;
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private RoleFactory roleFactory;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JWTUtils jwtUtils;
+    @Autowired
+    private RedisTemplate<String, String> template;
 
     public Set<Role> determineRoles(List<String> rolesName) {
         Set<Role> roles = new HashSet<>();
@@ -63,5 +70,11 @@ public class UserService {
 
     public List<User> findAll() {
         return (List<User>) userRepository.findAll();
+    }
+
+    public boolean logout(String jwt) {
+        long timeExpireLeft = jwtUtils.getExpiration(jwt).getTime() - new Date().getTime();
+        template.opsForSet().add(jwt, jwt);
+        return template.expire(jwt, Duration.ofMillis(timeExpireLeft));
     }
 }

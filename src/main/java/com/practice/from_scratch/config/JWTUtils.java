@@ -4,6 +4,7 @@ import com.practice.from_scratch.entity.UserDetailsImpl;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,22 +20,11 @@ public class JWTUtils {
 
     @Value("${jwtSecret}")
     private String jwtSecret;
-
     @Value("${jwtExpirationMs}")
     private long jwtExpirationMs;
 
     public SecretKey key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-    }
-
-    public boolean validateJwtToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key()).build().parse(token);
-            return true;
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
-        return false;
     }
 
     public String generateJwtToken(Authentication authentication) {
@@ -48,10 +38,25 @@ public class JWTUtils {
                 .compact();
     }
 
+    public String getJwtToken(HttpServletRequest request) {
+        String token = request.getHeader("authorization");
+        if (token != null && token.startsWith("Bearer "))
+            return token.substring(7);
+
+        return null;
+    }
+
     public String getUsernameFromJwtToken(String jwt) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
                 .parseClaimsJws(jwt)
                 .getBody()
                 .getSubject();
+    }
+
+    public Date getExpiration(String jwt) {
+        return Jwts.parserBuilder().setSigningKey(key()).build()
+                .parseClaimsJws(jwt)
+                .getBody()
+                .getExpiration();
     }
 }
