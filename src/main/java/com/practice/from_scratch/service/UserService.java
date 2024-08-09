@@ -1,11 +1,12 @@
 package com.practice.from_scratch.service;
 
-import com.practice.from_scratch.dto.UserSignUpDto;
+import com.practice.from_scratch.dto.request.RequestSignUpDto;
 import com.practice.from_scratch.entity.Role;
 import com.practice.from_scratch.entity.User;
 import com.practice.from_scratch.extension.RoleFactory;
 import com.practice.from_scratch.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -19,6 +20,8 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private RoleFactory roleFactory;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Set<Role> determineRoles(List<String> rolesName) {
         Set<Role> roles = new HashSet<>();
@@ -33,16 +36,16 @@ public class UserService {
         return roles;
     }
 
-    public User createUser(UserSignUpDto userSignUpDto) {
+    public User createUser(RequestSignUpDto requestSignUpDto) {
         return User.builder()
-                .firstName(userSignUpDto.getFirstName())
-                .lastName(userSignUpDto.getLastName())
-                .email(userSignUpDto.getEmail())
-                .password(userSignUpDto.getPassword())
-                .phoneNumber(userSignUpDto.getPhoneNumber())
-                .address(userSignUpDto.getAddress())
-                .enabled(userSignUpDto.isEnabled())
-                .roles(determineRoles(userSignUpDto.getRoles()))
+                .firstName(requestSignUpDto.getFirstName())
+                .lastName(requestSignUpDto.getLastName())
+                .email(requestSignUpDto.getEmail())
+                .password(requestSignUpDto.getPassword())
+                .phoneNumber(requestSignUpDto.getPhoneNumber())
+                .address(requestSignUpDto.getAddress())
+                .enabled(requestSignUpDto.isEnabled())
+                .roles(determineRoles(requestSignUpDto.getRoles()))
                 .build();
     }
 
@@ -54,6 +57,11 @@ public class UserService {
     }
 
     public User save(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    public List<User> findAll() {
+        return (List<User>) userRepository.findAll();
     }
 }
