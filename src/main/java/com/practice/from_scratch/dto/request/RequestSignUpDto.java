@@ -1,11 +1,11 @@
-package com.practice.from_scratch.dto;
+package com.practice.from_scratch.dto.request;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class UserSignUpDto {
+public class RequestSignUpDto {
     private String firstName;
     private String lastName;
     private String email;
