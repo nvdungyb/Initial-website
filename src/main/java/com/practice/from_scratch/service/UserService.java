@@ -1,14 +1,17 @@
 package com.practice.from_scratch.service;
 
 import com.practice.from_scratch.config.JWTUtils;
+import com.practice.from_scratch.dto.request.RequestLoginDto;
 import com.practice.from_scratch.dto.request.RequestSignUpDto;
 import com.practice.from_scratch.entity.Role;
 import com.practice.from_scratch.entity.User;
 import com.practice.from_scratch.extension.RoleFactory;
 import com.practice.from_scratch.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +20,8 @@ import java.util.*;
 
 @Service
 public class UserService {
-    @Value("${logoutKeySet}")
-    private String keySet;
+    @Autowired
+    private AuthenticationManager authenticationManager;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -76,5 +79,13 @@ public class UserService {
         long timeExpireLeft = jwtUtils.getExpiration(jwt).getTime() - new Date().getTime();
         template.opsForSet().add(jwt, jwt);
         return template.expire(jwt, Duration.ofMillis(timeExpireLeft));
+    }
+
+    public Authentication authenticate(RequestLoginDto userLogin) {
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
+                new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword());
+        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+
+        return authentication;
     }
 }

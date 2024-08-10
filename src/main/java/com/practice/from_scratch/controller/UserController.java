@@ -10,8 +10,6 @@ import com.practice.from_scratch.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +22,6 @@ import java.util.List;
 public class UserController {
     @Autowired
     private UserService userService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
     @Autowired
     private JWTUtils jwtUtils;
 
@@ -45,10 +41,7 @@ public class UserController {
 
     @GetMapping("/api/login")
     public ResponseEntity<?> jwtProvider(@RequestBody RequestLoginDto userLogin) {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword());
-        Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-
+        Authentication authentication = userService.authenticate(userLogin);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
         ResponseLoginDto responseLoginDto = ResponseLoginDto.builder()
