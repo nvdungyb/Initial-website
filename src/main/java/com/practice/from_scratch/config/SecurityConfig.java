@@ -50,7 +50,8 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/signup", "/api/login").permitAll()
+                        .requestMatchers("/api/signup", "/api/login",
+                                "/api/v2/login", "/api/v2/refresh").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(Customizer.withDefaults());
 

@@ -1,4 +1,4 @@
-package com.practice.from_scratch.dto.response;
+package com.practice.from_scratch.dto.response.v1;
 
 import com.practice.from_scratch.entity.UserDetailsImpl;
 import lombok.Builder;
