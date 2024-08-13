@@ -3,6 +3,7 @@ package com.practice.from_scratch.config;
 import com.practice.from_scratch.entity.User;
 import com.practice.from_scratch.entity.UserDetailsImpl;
 import com.practice.from_scratch.repository.UserRepository;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,13 +27,14 @@ public class JwtFilter extends OncePerRequestFilter {
     private RedisTemplate<String, Object> redisTemplate;
 
     public boolean validateJwtToken(String token) {
+        // We store access token and refresh token in redis when user login.
         try {
             Jwts.parserBuilder().setSigningKey(jwtUtils.key()).build().parse(token);
-            // We store jwt token in redis when user logout.
-            if (redisTemplate.opsForSet().isMember(token, token))
-                return false;
-
-            return true;
+            String username = jwtUtils.getUsernameFromJwtToken(token);
+            return redisTemplate.opsForSet().isMember(username, token);
+        } catch (ExpiredJwtException expiredJwtException) {
+            String username = expiredJwtException.getClaims().getSubject();
+            redisTemplate.opsForSet().remove(username, token);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }

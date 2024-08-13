@@ -15,8 +15,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -76,9 +78,8 @@ public class UserService {
     }
 
     public boolean logout(String jwt) {
-        long timeExpireLeft = jwtUtils.getExpiration(jwt).getTime() - new Date().getTime();
-        template.opsForSet().add(jwt, jwt);
-        return template.expire(jwt, Duration.ofMillis(timeExpireLeft));
+        String username = jwtUtils.getUsernameFromJwtToken(jwt);
+        return template.opsForSet().remove(username, jwt) == 1 ? true : false;
     }
 
     public Authentication authenticate(RequestLoginDto userLogin) {
